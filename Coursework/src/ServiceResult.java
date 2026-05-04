@@ -1,0 +1,9 @@
+
+public enum ServiceResult {
+	SUCCESS,
+    NOT_FOUND,
+    EXCEEDED_QUANTITY,
+    INSUFFICIENT_QUANTITY,
+    INVALID_INPUT,
+    CANCELLED
+}
