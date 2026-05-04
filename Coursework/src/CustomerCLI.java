@@ -91,13 +91,13 @@ public class CustomerCLI {
     public static void userDisplayItems(Scanner scanner, List<Product> productList) {
         // Create a copy so we don't accidentally sort the main stock list
         List<Product> sortedList = new ArrayList<>(productList);
-        sortedList.sort(Comparator.comparingDouble(Product::getPrice));
+        sortedList.sort(Comparator.comparingDouble(Product::getPrice).reversed());
         
         System.out.println(String.format("%-6s | %-30s | %-8s | %-7s | %s",
                 "ID", "Name", "Price", "Stock", "Extra Info"));
         System.out.println("---------------------------------------------------------------------------------------");
         for (Product p : sortedList) {
-            String commonInfo = String.format("%-6d | %-30s | $%-7.2f | %-7d", 
+            String commonInfo = String.format("%-6d | %-30s | £%-7.2f | %-7d", 
                                 p.getProductID(), p.getProductName(), p.getPrice(), p.getStock());
             
             String extraInfo = p.getExtraDetails();
@@ -235,12 +235,12 @@ public class CustomerCLI {
             int quantity = basket.getProductCount(p.getProductID());
             double subtotal = p.getPrice() * quantity;
             
-            System.out.println(String.format("%-5d | %-20s | $%-9.2f | %-8d | $%-9.2f",
+            System.out.println(String.format("%-5d | %-20s | £%-9.2f | %-8d | £%-9.2f",
                     p.getProductID(), p.getProductName(), p.getPrice(), quantity, subtotal));
         }
 
         System.out.println("-------------------------------------------------------------------");
-        System.out.println(String.format("TOTAL: $%.2f", basket.calculateTotal()));
+        System.out.println(String.format("TOTAL: £%.2f", basket.calculateTotal()));
         System.out.println("-------------------------------------------------------------------\n");
     }
     

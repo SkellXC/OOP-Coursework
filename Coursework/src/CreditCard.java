@@ -19,13 +19,13 @@ import java.time.LocalDate;
 			if (cardNumber.length() >= 4) {
 				lastDigits = cardNumber.substring(cardNumber.length() - 4);
 			} else {
-				lastDigits = cardNumber; // Or handle the error
+				lastDigits = cardNumber;
 			}
 
 
 			String receiptText = String.format("%s"
 					+ "\nAmount £%.2f has been paid via Credit Card"
-					+ "\nCard Number:**** **** **** %s"
+					+ "\nCard Number: ** %s"// Easily adjustable for real card details
 					+ "\nBilling Address: %s",
 					 today, total, lastDigits, address.getFullAddress());
 			return new Receipt(receiptText);

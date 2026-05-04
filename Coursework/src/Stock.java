@@ -23,6 +23,12 @@ public class Stock {
 		}
 		try {
 			int id = Integer.parseInt(details[0].trim());
+			
+			if (findProductById(id) != null) {
+	            return false; // ID already exists, reject the addition
+	        }		
+			
+			
 			String category = details[1].trim();
 			String type = details[2].trim();
 			String name = details[3].trim();
