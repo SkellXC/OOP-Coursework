@@ -22,4 +22,11 @@ public class BoardGame extends Product{
         // Just append to the parent's string!
         return super.toString() + String.format("\nMax Players: %d", maxPlayers);
     }
+    
+    @Override
+    public String toFileString() {
+        return String.format("%d; board game; %s; %s; %.2f; %d; %.2f; %d",
+            getProductID(), getProductType(), getProductName(), getPrice(), 
+            getStock(), getPurchaseCost(), maxPlayers);
+    }
 }

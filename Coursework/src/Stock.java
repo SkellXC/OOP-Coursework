@@ -60,47 +60,32 @@ public class Stock {
 	}
 	
 	public boolean updateStockValue(int id, int stockToAdd) {
-		boolean itemFound = false;
+	    // 1. Find the product using your helper method
+	    Product productToUpdate = findProductById(id);
+	    
+	    if (productToUpdate == null) {
+	        return false; // Item not found
+	    }
 
-		for (Product p : productList) {
-			if (p.getProductID() == id) {
-				int updatedStock = p.getStock() + stockToAdd;
-				p.setStock(updatedStock);
-				itemFound = true;
-				break;
-			}
-		}
+	    // 2. Update the stock
+	    int updatedStock = productToUpdate.getStock() + stockToAdd;
+	    productToUpdate.setStock(updatedStock);
 
-		if (!itemFound) {
-			return false; 
-		}
+	    // 3. Save the entire list back to the file using polymorphism
+	    try {
+	        PrintWriter writer = new PrintWriter(new FileWriter(filename, false)); // false means overwrite
+	        
+	        for (Product p : productList) {
+	            // The product knows how to format its own string now!
+	            writer.println(p.toFileString()); 
+	        }
 
-		try {
-			PrintWriter writer = new PrintWriter(new FileWriter(filename, false));
-			
-			for (Product p : productList) {
-				String category = "";
-				String additional = "";
+	        writer.close();
+	        return true;
 
-				if (p instanceof BoardGame) {
-					category = "board game";
-					additional = String.valueOf(((BoardGame) p).getMaxPlayers());
-				} else if (p instanceof Accessory) {
-					category = "accessory";
-					additional = ((Accessory) p).getCompatibility();
-				}
-
-				writer.printf("%d; %s; %s; %s; %.2f; %d; %.2f; %s\n",
-					p.getProductID(), category, p.getProductType(), p.getProductName(), 
-					p.getPrice(), p.getStock(), p.getPurchaseCost(), additional);
-			}
-
-			writer.close();
-			return true;
-
-		} catch (Exception e) {
-			return false;
-		}
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
 
 	public ArrayList<Product> loadStock() {

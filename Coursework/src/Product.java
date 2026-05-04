@@ -69,5 +69,6 @@ public abstract class Product {
                 getProductID(), getProductCategory(), getProductType(), getProductName(), getPrice(), getStock());
     }
     
+    public abstract String toFileString();
     
 }

@@ -22,5 +22,12 @@ public class Accessory extends Product{
         // Just append to the parent's string!
         return super.toString() + String.format("\nCompatibility: %s", compatibility);
     }
+    
+    @Override
+    public String toFileString() {
+        return String.format("%d; accessory; %s; %s; %.2f; %d; %.2f; %s",
+            getProductID(), getProductType(), getProductName(), getPrice(), 
+            getStock(), getPurchaseCost(), compatibility);
+    }
 }	
 
