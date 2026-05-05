@@ -1,32 +1,25 @@
+public class BoardGame extends Product {
+    private String type;
+    private int maxPlayers;
 
-public class BoardGame extends Product{
-	private int maxPlayers;
-	
-	public BoardGame(int productID, ProductCategory productCategory, String type, String productName,
-			double price, int stock, double purchaseCost, int maxPlayers) {
-		super(productID, productCategory, type, productName, price, stock, purchaseCost);
-		this.maxPlayers = maxPlayers;
-		
-	}
-	public int getMaxPlayers() {
-		return maxPlayers;	
-	}
-	
-	@Override
-    public String getExtraDetails() {
-        return "Max Players: " + maxPlayers;
+    public BoardGame(int productId, ProductCategory productCategory, String type, String productName, 
+            double purchaseCost, int quantityInStock, double price, int maxPlayers) {
+        super(productId, productCategory, productName, purchaseCost, quantityInStock, price);
+        this.type = type;
+        this.maxPlayers = maxPlayers;
     }
-    
+
+    public String getType() {
+        return type;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
     @Override
     public String toString() {
-        // Just append to the parent's string!
-        return super.toString() + String.format("\nMax Players: %d", maxPlayers);
-    }
-    
-    @Override
-    public String toFileString() {
-        return String.format("%d; board game; %s; %s; %.2f; %d; %.2f; %d",
-            getProductID(), getProductType(), getProductName(), getPrice(), 
-            getStock(), getPurchaseCost(), maxPlayers);
+        return String.format("%-6d | %-30s | £%-7.2f | %-7d | Max Players: %d", 
+                getProductId(), getProductName(), getPrice(), getQuantityInStock(), maxPlayers);
     }
 }
