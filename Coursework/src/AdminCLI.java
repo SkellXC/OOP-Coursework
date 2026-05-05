@@ -89,7 +89,8 @@ public class AdminCLI {
         
         ProductCategory[] categories = ProductCategory.values();
         for (int i = 0; i < categories.length; i++) {
-            System.out.println("Enter '" + (i + 1) + "' for " + categories[i].getDisplayName());
+            String displayName = (categories[i] == ProductCategory.BOARDGAME) ? "board game" : "accessory";
+            System.out.println("Enter '" + (i + 1) + "' for " + displayName);
         }
         
         int choice;
@@ -113,7 +114,11 @@ public class AdminCLI {
         ProductCategory selectedCat = categories[choice - 1];
         String[] productDetails = new String[8];
 
-        productDetails[1] = selectedCat.getDisplayName(); 
+        String categoryName = (selectedCat == ProductCategory.BOARDGAME) ? "board game" : "accessory";
+        String extraPrompt = (selectedCat == ProductCategory.BOARDGAME) ? "Enter max number of players:" : "Enter compatibility:";
+        String extraLabel = (selectedCat == ProductCategory.BOARDGAME) ? "Max Players" : "Compatibility";
+
+        productDetails[1] = categoryName; 
 
         System.out.println("Enter the Product ID: ");
         productDetails[0] = scanner.nextLine().trim();
@@ -133,13 +138,13 @@ public class AdminCLI {
         System.out.println("Enter wholesale unit price:");
         productDetails[6] = scanner.nextLine().trim();
         
-        System.out.println(selectedCat.getExtraPrompt());
+        System.out.println(extraPrompt);
         productDetails[7] = scanner.nextLine().trim();
         
         System.out.println("\nThe product you are adding has the following details:");
         System.out.printf("ID: %s\nCategory: %s\nType: %s\nName: %s\nPrice: £%s\nStock: %s\nWholesale Price: £%s\n%s: %s\n",
             productDetails[0], productDetails[1], productDetails[2], productDetails[3], productDetails[4],
-            productDetails[5], productDetails[6], selectedCat.getExtraLabel(), productDetails[7]);
+            productDetails[5], productDetails[6], extraLabel, productDetails[7]);
         
         while (true) {
             System.out.println("Enter 1 to add product and 0 to cancel");
@@ -164,6 +169,7 @@ public class AdminCLI {
             }
         }
     }
+    
     
     public static void adminDisplayItems(List<Product> productList, Scanner scanner) {
         List<Product> sortedList = new ArrayList<>(productList);

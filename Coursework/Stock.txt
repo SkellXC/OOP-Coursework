@@ -9,3 +9,4 @@
 7381; accessory; dice; 7-piece Polyhedral Dice Set; 12.00; 0; 12.00; Dungeons & Dragons
 2674; accessory; dice; Metal D20 Collector Die; 9.00; 40; 9.00; Universal
 987; accessory; Controller; Space Marine Themed Controller; 45.00; 10; 19.00; wh40k
+2941; accessory; miniature; Necron Figure; 19.99; 8; 8.50; Warhammer 40K

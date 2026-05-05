@@ -1,9 +1,9 @@
 
 	public class CreditCard implements PaymentMethod{
 		private String cardNumber;
-		private int securityCode;
+		private String securityCode;
 		
-		public CreditCard(String cardNumber, int securityCode) {
+		public CreditCard(String cardNumber, String securityCode) {
 			this.cardNumber = cardNumber;
 			this.securityCode = securityCode;
 			

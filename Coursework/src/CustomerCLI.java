@@ -83,14 +83,13 @@ public class CustomerCLI {
     public static void userDisplayItems(Scanner scanner, List<Product> productList) {
         List<Product> sortedList = new ArrayList<>(productList);
         
-        // BRIEF REQUIREMENT: Sorted descending by unit price.
         sortedList.sort(Comparator.comparingDouble(Product::getPrice).reversed());
         
         System.out.println(String.format("%-6s | %-30s | %-8s | %-7s | %s",
                 "ID", "Name", "Price", "Stock", "Extra Info"));
         System.out.println("---------------------------------------------------------------------------------------");
         for (Product p : sortedList) {
-            // Using the subclass implementations of toString()
+
             System.out.println(p.toString());
         }
     }
@@ -336,7 +335,7 @@ public class CustomerCLI {
                 }
             }
             
-            int code = 0;
+            String code = "";
             while (true) {
                 System.out.print("Enter 3-digit security code (or 0 to cancel): ");
                 String codeStr = scanner.nextLine().trim();
@@ -347,14 +346,15 @@ public class CustomerCLI {
                 }
                 
                 if (codeStr.matches("\\d{3}")) {
-                    code = Integer.parseInt(codeStr);
+                    code = codeStr;
                     break;
                 } else {
                     System.out.println("Invalid input. Security code must be exactly 3 digits.");
                 }
             }
             method = new CreditCard(card, code);
-        } else {
+        } 
+        else {
             System.out.println("Invalid payment method selected. Checkout cancelled.");
             return; 
         }

@@ -25,7 +25,6 @@ public class Stock {
         try {
             int id = Integer.parseInt(details[0].trim());
             
-            // BRIEF REQUIREMENT: Prevent adding products with the same ID
             if (findProductById(id) != null) {
                 System.out.println("Error: A product with ID " + id + " already exists.");
                 return false; 
