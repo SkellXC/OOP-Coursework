@@ -18,26 +18,22 @@ public class AdminCLI {
             try {
                 selection = Integer.parseInt(consoleInput.nextLine().trim());
             } catch (NumberFormatException e) {
-                selection = -1; // Forces default case
+                selection = -1; 
             }
             
             switch (selection) {
                 case 1: 
                     adminDisplayItems(stock.getProductList(), consoleInput); 
                     break;
-                
                 case 2: 
                     System.out.println("Add New Product to Stock:");
                     takeProductDetails(consoleInput, stock); 
                     break;
-                    
                 case 3: 
                     updateStockAmount(consoleInput, stock);
                     break;
-                    
                 case 0:
                     return;
-                    
                 default:
                     System.out.println(INVALID);
                     System.out.println();
@@ -178,16 +174,15 @@ public class AdminCLI {
         System.out.println("--------------------------------------------------------------------------------------------------------");
 
         for (Product p : sortedList) {
-            String commonInfo = String.format("%-6d | %-30s | £%-7.2f | £%-14.2f | %-7d", 
-                                p.getProductID(), p.getProductName(), p.getPrice(), p.getPurchaseCost(), p.getStock());
-
-            String extraInfo = p.getExtraDetails();
-
-            if (!extraInfo.isEmpty()) {
-                System.out.println(commonInfo + " | " + extraInfo);
-            } else {
-                System.out.println(commonInfo);
+            String extraInfo = "";
+            if (p instanceof BoardGame) {
+                extraInfo = "Max Players: " + ((BoardGame) p).getMaxPlayers();
+            } else if (p instanceof Accessory) {
+                extraInfo = "Compatibility: " + ((Accessory) p).getCompatibility();
             }
+
+            System.out.println(String.format("%-6d | %-30s | £%-7.2f | £%-14.2f | %-7d | %s", 
+                                p.getProductId(), p.getProductName(), p.getPrice(), p.getPurchaseCost(), p.getQuantityInStock(), extraInfo));
         }
         System.out.println("\nPress Enter to return to the main menu...");
         scanner.nextLine();

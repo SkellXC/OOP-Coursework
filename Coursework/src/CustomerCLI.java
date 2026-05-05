@@ -1,8 +1,8 @@
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
-import java.util.Set;
 
 public class CustomerCLI {
     public final static String NOT_IMPLEMENTED = "Not implemented";
@@ -18,57 +18,49 @@ public class CustomerCLI {
             try {
                 selection = Integer.parseInt(consoleInput.nextLine().trim());
             } catch (NumberFormatException e) {
-                selection = -1; // Forces the default case
+                selection = -1;
             }
             
             switch (selection) {
-                case 1: // VIEW STOCK
-                    userDisplayItems(consoleInput, stock.getProductList()); // Using memory list
+                case 1: 
+                    userDisplayItems(consoleInput, stock.getProductList()); 
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine(); 
                     break;
-
-                case 2: // Add item to basket
-                    userDisplayItems(consoleInput, stock.getProductList()); // Using memory list
+                case 2: 
+                    userDisplayItems(consoleInput, stock.getProductList()); 
                     handleAdd(consoleInput, currentCustomer, stock);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
                 case 3:
                     handleViewBasket(currentCustomer);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
-                case 4: // Remove item
+                case 4: 
                     handleViewBasket(currentCustomer);
                     handleRemove(consoleInput, currentCustomer);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
                 case 5:
                     handlePayment(consoleInput, currentCustomer, stock);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
                 case 6:
                     clearBasket(consoleInput, currentCustomer);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
                 case 7:
                     handleSearch(consoleInput, stock);
                     System.out.println("\nPress Enter to return to the main menu...");
                     consoleInput.nextLine();
                     break;
-                    
                 case 0:
                     return;
-                    
                 default:
                     System.out.println(INVALID);
                     System.out.println();
@@ -89,24 +81,17 @@ public class CustomerCLI {
     }
 
     public static void userDisplayItems(Scanner scanner, List<Product> productList) {
-        // Create a copy so we don't accidentally sort the main stock list
         List<Product> sortedList = new ArrayList<>(productList);
+        
+        // BRIEF REQUIREMENT: Sorted descending by unit price.
         sortedList.sort(Comparator.comparingDouble(Product::getPrice).reversed());
         
         System.out.println(String.format("%-6s | %-30s | %-8s | %-7s | %s",
                 "ID", "Name", "Price", "Stock", "Extra Info"));
         System.out.println("---------------------------------------------------------------------------------------");
         for (Product p : sortedList) {
-            String commonInfo = String.format("%-6d | %-30s | £%-7.2f | %-7d", 
-                                p.getProductID(), p.getProductName(), p.getPrice(), p.getStock());
-            
-            String extraInfo = p.getExtraDetails();
-            
-            if (!extraInfo.isEmpty()) {
-                System.out.println(commonInfo + " | " + extraInfo);
-            } else {
-                System.out.println(commonInfo);
-            }
+            // Using the subclass implementations of toString()
+            System.out.println(p.toString());
         }
     }
     
@@ -121,8 +106,8 @@ public class CustomerCLI {
         }
 
         Product productToRemove = null;
-        for (Product p : customer.getBasket().getUniqueItems()) {
-            if (p.getProductID() == productID) {
+        for (Product p : customer.getBasket().getItems()) {
+            if (p.getProductId() == productID) {
                 productToRemove = p;
                 break;
             }
@@ -142,7 +127,7 @@ public class CustomerCLI {
             return;
         }
 
-        int currentCount = customer.getBasket().getProductCount(productToRemove);
+        int currentCount = customer.getBasket().getProductCount(productToRemove.getProductId());
         
         if (quantity == currentCount && currentCount > 0) {
             System.out.println("Warning: This will remove ALL instances of this item. Confirm? (1=Yes)");
@@ -169,9 +154,6 @@ public class CustomerCLI {
                 break;
         }
     }
-   
-    
-    
     
     public static void handleAdd(Scanner scanner, Customer customer, Stock stock) {
         System.out.println("Enter the ID of the product you want to add:");
@@ -199,7 +181,6 @@ public class CustomerCLI {
             return;
         }
 
-        // Delegated logic to the model
         ServiceResult result = customer.addToBasket(productToAdd, quantity);
 
         switch (result) {
@@ -210,7 +191,7 @@ public class CustomerCLI {
                 System.out.println("Error: Quantity must be at least 1.");
                 break;
             case INSUFFICIENT_QUANTITY:
-                System.out.println("Error: Not enough stock available. Currently available: " + productToAdd.getStock());
+                System.out.println("Error: Not enough stock available. Currently available: " + productToAdd.getQuantityInStock());
                 break;
             default:
                 System.out.println("Error: Could not add item to basket.");
@@ -220,10 +201,9 @@ public class CustomerCLI {
 
     public static void handleViewBasket(Customer customer) {
         ShoppingCart basket = customer.getBasket();
-        // Use the Map's unique keys instead of a flat list
-        Set<Product> uniqueItems = basket.getUniqueItems();
+        List<Product> items = basket.getItems();
 
-        if (uniqueItems.isEmpty()) {
+        if (items.isEmpty()) {
             System.out.println("\nYour shopping basket is currently empty.");
             return;
         }
@@ -233,14 +213,14 @@ public class CustomerCLI {
                 "ID", "Name", "Price", "Quantity", "Subtotal"));
         System.out.println("-------------------------------------------------------------------");
 
-        // Loop directly through the unique set
-        for (Product p : uniqueItems) {
-            // Pass the Product object 'p', not the ID
-            int quantity = basket.getProductCount(p); 
+        List<Product> distinctItems = items.stream().distinct().collect(Collectors.toList());
+
+        for (Product p : distinctItems) {
+            int quantity = basket.getProductCount(p.getProductId());
             double subtotal = p.getPrice() * quantity;
             
             System.out.println(String.format("%-5d | %-20s | £%-9.2f | %-8d | £%-9.2f",
-                    p.getProductID(), p.getProductName(), p.getPrice(), quantity, subtotal));
+                    p.getProductId(), p.getProductName(), p.getPrice(), quantity, subtotal));
         }
 
         System.out.println("-------------------------------------------------------------------");
@@ -273,7 +253,6 @@ public class CustomerCLI {
             System.out.println("Enter Product ID:");
             String inputID = scanner.nextLine().trim();
             
-            // The CLI just asks Stock to do the hard work
             List<Product> matches = stock.searchByIdMatch(inputID);
             
             if (matches.isEmpty()) {
@@ -287,7 +266,6 @@ public class CustomerCLI {
             System.out.println("Enter Compatibility:");
             String inputComp = scanner.nextLine().trim();
             
-            // The CLI just asks Stock to do the hard work
             List<Product> matches = stock.searchByCompatibility(inputComp);
             
             if (matches.isEmpty()) {
@@ -375,9 +353,7 @@ public class CustomerCLI {
                     System.out.println("Invalid input. Security code must be exactly 3 digits.");
                 }
             }
-            
             method = new CreditCard(card, code);
-            
         } else {
             System.out.println("Invalid payment method selected. Checkout cancelled.");
             return; 
@@ -388,8 +364,7 @@ public class CustomerCLI {
             System.out.println("\n--- RECEIPT ---");
             System.out.println(finalReceipt); 
             System.out.println("---------------\n");
-        } 
-        else {
+        } else {
             System.out.println("Checkout failed: One or more items in your basket"
                     + " have sold out or do not have enough stock remaining.");
         }
