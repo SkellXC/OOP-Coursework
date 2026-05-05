@@ -11,7 +11,7 @@ public class Main {
         Stock stock = new Stock();
         
         // Load users from file
-        List<User> users = loadUsersFromFile("Users.txt");
+        List<User> users = loadUsersFromFile("UserAccounts.txt");
         Scanner consoleInput = new Scanner(System.in);
         System.out.println("WELCOME");
         

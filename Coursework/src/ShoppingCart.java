@@ -1,57 +1,58 @@
-import  java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ShoppingCart {
-	private ArrayList<Product> items;
-	
+
+	// Key = Product, Value = Quantity
+	private Map<Product, Integer> items;
 	public ShoppingCart() {
-		this.items = new ArrayList<>();
+		this.items = new HashMap<>();
 	}
 	
 
 	public ServiceResult addItemToCart(Product product, int quantity) {
-		if (quantity < 1) {
-			return ServiceResult.INVALID_INPUT;
-		}
-		
-		// Check if requested amount exceeds available stock
-		int currentInCart = getProductCount(product.getProductID());
-		if ((currentInCart + quantity) > product.getStock()) {
-		    return ServiceResult.INSUFFICIENT_QUANTITY;
-		}
-		
-	    for (int i = 0; i < quantity; i++) {
-	        items.add(product);
-	    }
-	    return ServiceResult.SUCCESS;
-	}
+        if (quantity < 1) {
+            return ServiceResult.INVALID_INPUT;
+        }
+        
+        int currentInCart = getProductCount(product);
+        if ((currentInCart + quantity) > product.getStock()) {
+            return ServiceResult.INSUFFICIENT_QUANTITY;
+        }
+        
+        // Correct Map syntax for adding
+        items.put(product, currentInCart + quantity);
+        return ServiceResult.SUCCESS;
+    }
 
 	
-	public int getProductCount(int productID) {
-	    int count = 0;
-	    for (Product item : items) {
-	        if (item.getProductID() == productID) {
-	            count++;
-	        }
-	    }
-	    return count;
-	}
+	public int getProductCount(Product product) {
+        return items.getOrDefault(product, 0);
+    }
 
 	public ServiceResult removeItemFromCart(Product product, int quantity) {
-	    int currentCount = getProductCount(product.getProductID());
-	    if (currentCount == 0) {
-	    	// Checks if the item is in the cart
-	    	return ServiceResult.NOT_FOUND;
-	    }
-	    if (quantity > currentCount) {
-	    	// Checks if too many items are being removed
-	        return ServiceResult.EXCEEDED_QUANTITY;
-	    }
-	    
-	    for (int i = 0; i < quantity; i++) {
-	        items.remove(product);
-	    }
-	    return ServiceResult.SUCCESS;
-	}
+        int currentCount = getProductCount(product);
+        
+        if (currentCount == 0) {
+            return ServiceResult.NOT_FOUND;
+        }
+        if (quantity > currentCount) {
+            return ServiceResult.EXCEEDED_QUANTITY;
+        }
+        
+        int newQuantity = currentCount - quantity;
+        
+        if (newQuantity <= 0) {
+            items.remove(product);
+        } else {
+            items.put(product, newQuantity);
+        }
+        
+        return ServiceResult.SUCCESS;
+    }
 	
 	
 	public void clearCart() {
@@ -59,55 +60,59 @@ public class ShoppingCart {
 	}
 	
 	public double calculateTotal() {
-		double total = 0;
-		for(Product item : items) {
-			total += item.getPrice();
-		}
-		return total;
-	}
-
+        double total = 0;
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            Product p = entry.getKey();
+            int qty = entry.getValue();
+            total += (p.getPrice() * qty);
+        }
+        return total;
+    }
+	public Set<Product> getUniqueItems() {
+        return items.keySet();
+    }
 	
-	public ArrayList<Product> getItems() {
-	    return items;
-	}
+	public List<Product> getItems() {
+        List<Product> flatList = new ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            for (int i = 0; i < entry.getValue(); i++) {
+                flatList.add(entry.getKey());
+            }
+        }
+        return flatList;
+    }
 	
 	
 	public Receipt pay(PaymentMethod paymentMethod, Stock mainStock, Address billingAddress) {
-	    if (this.items.isEmpty()) {
-	        return null; 
-	    }
+        if (this.items.isEmpty()) {
+            return null; 
+        }
 
-	    ArrayList<Integer> processedIDs = new ArrayList<>();
-	    
-	    // --- PHASE 1: VALIDATION (The Final Stock Check) ---
-	    for (Product basketItem : this.items) {
-	        int id = basketItem.getProductID();
-	        
-	        if (!processedIDs.contains(id)) {
-	            int totalQtyInBasket = getProductCount(id);
-	            Product stockItem = mainStock.findProductById(id);
-	            
-	            // FINAL CHECK: Does the store still have enough right now?
-	            if (stockItem == null || totalQtyInBasket > stockItem.getStock()) {
-	                return null; // Abort the entire checkout!
-	            }
-	            processedIDs.add(id);
-	        }
-	    }
+        // --- PHASE 1: VALIDATION ---
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            Product basketItem = entry.getKey();
+            int totalQtyInBasket = entry.getValue();
+            
+            Product stockItem = mainStock.findProductById(basketItem.getProductID());
+            
+            if (stockItem == null || totalQtyInBasket > stockItem.getStock()) {
+                return null; 
+            }
+        }
 
-	    // --- PHASE 2: PROCESSING (Only runs if ALL items passed Phase 1) ---
-	    double totalAmount = calculateTotal();
-	    
-	    for (Integer id : processedIDs) {
-	        int totalQtyInBasket = getProductCount(id);
-	        mainStock.updateStockValue(id, -totalQtyInBasket);
-	    }
-	    
-	    Receipt finalReceipt = paymentMethod.processPayment(totalAmount, billingAddress);
-	    this.clearCart();
-	    
-	    return finalReceipt;
-	}
+        // --- PHASE 2: PROCESSING ---
+        double totalAmount = calculateTotal();
+        
+        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
+            int totalQtyInBasket = entry.getValue();
+            mainStock.updateStockValue(entry.getKey().getProductID(), -totalQtyInBasket);
+        }
+        
+        Receipt finalReceipt = paymentMethod.processPayment(totalAmount, billingAddress);
+        this.clearCart();
+        
+        return finalReceipt;
+    }
 	
 }
 

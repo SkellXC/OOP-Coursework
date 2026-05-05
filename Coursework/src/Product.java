@@ -1,3 +1,4 @@
+import java.util.Objects;
 
 public abstract class Product {
 	private int productID;
@@ -70,5 +71,26 @@ public abstract class Product {
     }
     
     public abstract String toFileString();
+    
+    @Override
+    public boolean equals(Object obj) {
+        // 1. If it's the exact same memory reference, it's equal
+        if (this == obj) return true;
+        
+        // 2. If the other object is null or not a Product, it's not equal
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        // 3. Cast the object to a Product and compare their IDs
+        Product otherProduct = (Product) obj;
+        return this.productID == otherProduct.productID;
+    }
+    
+    @Override
+    public int hashCode() {
+        // Whenever you override equals, you MUST override hashCode.
+        // It ensures data structures like HashMaps can find your object.
+        return Objects.hash(productID);
+    }
+    
     
 }

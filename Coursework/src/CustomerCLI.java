@@ -1,8 +1,8 @@
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class CustomerCLI {
     public final static String NOT_IMPLEMENTED = "Not implemented";
@@ -121,7 +121,7 @@ public class CustomerCLI {
         }
 
         Product productToRemove = null;
-        for (Product p : customer.getBasket().getItems()) {
+        for (Product p : customer.getBasket().getUniqueItems()) {
             if (p.getProductID() == productID) {
                 productToRemove = p;
                 break;
@@ -142,7 +142,7 @@ public class CustomerCLI {
             return;
         }
 
-        int currentCount = customer.getBasket().getProductCount(productToRemove.getProductID());
+        int currentCount = customer.getBasket().getProductCount(productToRemove);
         
         if (quantity == currentCount && currentCount > 0) {
             System.out.println("Warning: This will remove ALL instances of this item. Confirm? (1=Yes)");
@@ -169,6 +169,9 @@ public class CustomerCLI {
                 break;
         }
     }
+   
+    
+    
     
     public static void handleAdd(Scanner scanner, Customer customer, Stock stock) {
         System.out.println("Enter the ID of the product you want to add:");
@@ -217,9 +220,10 @@ public class CustomerCLI {
 
     public static void handleViewBasket(Customer customer) {
         ShoppingCart basket = customer.getBasket();
-        List<Product> items = basket.getItems();
+        // Use the Map's unique keys instead of a flat list
+        Set<Product> uniqueItems = basket.getUniqueItems();
 
-        if (items.isEmpty()) {
+        if (uniqueItems.isEmpty()) {
             System.out.println("\nYour shopping basket is currently empty.");
             return;
         }
@@ -229,10 +233,10 @@ public class CustomerCLI {
                 "ID", "Name", "Price", "Quantity", "Subtotal"));
         System.out.println("-------------------------------------------------------------------");
 
-        List<Product> distinctItems = items.stream().distinct().collect(Collectors.toList());
-
-        for (Product p : distinctItems) {
-            int quantity = basket.getProductCount(p.getProductID());
+        // Loop directly through the unique set
+        for (Product p : uniqueItems) {
+            // Pass the Product object 'p', not the ID
+            int quantity = basket.getProductCount(p); 
             double subtotal = p.getPrice() * quantity;
             
             System.out.println(String.format("%-5d | %-20s | £%-9.2f | %-8d | £%-9.2f",

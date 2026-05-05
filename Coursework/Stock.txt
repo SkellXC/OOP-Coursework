@@ -7,6 +7,5 @@
 2039; accessory; miniature; Space Commander Figure; 18.00; 25; 18.00; Warhammer 40K
 7125; accessory; miniature; Ancient Warrior Model; 15.00; 28; 15.00; Ancient Battles
 7381; accessory; dice; 7-piece Polyhedral Dice Set; 12.00; 38; 12.00; Dungeons & Dragons
-2674; accessory; dice; Metal D20 Collector Die; 9.00; 41; 9.00; Universal
-
+2674; accessory; dice; Metal D20 Collector Die; 9.00; 51; 9.00; Universal
 987; accessory; Controller; Space Marine Themed Controller; 45.00; 10; 19.00; wh40k
