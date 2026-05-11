@@ -3,7 +3,12 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Collections;
 import java.util.List;
+
+/**
+ * Manages the store's inventory
+ */
 
 public class Stock {
     private ArrayList<Product> productList;
@@ -14,45 +19,43 @@ public class Stock {
         loadStock();
     }
     
-    public ArrayList<Product> getProductList(){
-        return productList;
+    public List<Product> getProductList(){
+        return Collections.unmodifiableList(productList);
     }
     
-    public boolean addNewProduct(String[] details) {
-        if (details.length != 8) {
-            return false;
-        }
+    
+    /**
+     * Appends a new product to both the active memory and the text file.
+     * @param newProduct The instantiated Product (BoardGame or Accessory) to add.
+     */
+    public boolean addNewProduct(Product newProduct) {
         try {
-            int id = Integer.parseInt(details[0].trim());
-            
-            if (findProductById(id) != null) {
-                System.out.println("Error: A product with ID " + id + " already exists.");
+            if (findProductById(newProduct.getProductId()) != null) {
+                System.out.println("Error: A product with ID " + newProduct.getProductId() + " already exists.");
                 return false; 
             }
             
-            String category = details[1].trim();
-            String type = details[2].trim();
-            String name = details[3].trim();
-            double price = Double.parseDouble(details[4].trim());
-            int stock = Integer.parseInt(details[5].trim());
-            double cost = Double.parseDouble(details[6].trim());
-            String additional = details[7].trim();
-            
-            if (!category.equalsIgnoreCase("board game") && !category.equalsIgnoreCase("accessory")) {
-                return false; 
+            String category = "";
+            String type = "";
+            String additional = "";
+
+            if (newProduct instanceof BoardGame) {
+                category = "board game";
+                type = ((BoardGame) newProduct).getType();
+                additional = String.valueOf(((BoardGame) newProduct).getMaxPlayers());
+            } else if (newProduct instanceof Accessory) {
+                category = "accessory";
+                type = ((Accessory) newProduct).getType();
+                additional = ((Accessory) newProduct).getCompatibility();
             }
             
             PrintWriter writer = new PrintWriter(new FileWriter(filename, true));
             writer.printf("\n%d; %s; %s; %s; %.2f; %d; %.2f; %s", 
-                id, category, type, name, price, stock, cost, additional);
+                newProduct.getProductId(), category, type, newProduct.getProductName(), 
+                newProduct.getPrice(), newProduct.getQuantityInStock(), newProduct.getPurchaseCost(), additional);
             writer.close();
             
-            if (category.equalsIgnoreCase("board game")) {
-                int maxPlayers = Integer.parseInt(additional);
-                productList.add(new BoardGame(id, ProductCategory.BOARDGAME, type, name, cost, stock, price, maxPlayers));
-            } else if (category.equalsIgnoreCase("accessory")) {
-                productList.add(new Accessory(id, ProductCategory.ACCESSORY, type, name, cost, stock, price, additional));
-            }
+            productList.add(newProduct);
             
             return true;
         } catch(Exception e) {
@@ -60,6 +63,11 @@ public class Stock {
         }
     }
     
+    /**
+     * Modifies the stock level of an existing item.
+     * This method re-writes the entire file after updating
+     * the value
+     */
     public boolean updateStockValue(int id, int stockToAdd) {
         boolean itemFound = false;
 
@@ -107,6 +115,8 @@ public class Stock {
 
     public ArrayList<Product> loadStock() {
         try {
+        	// Clear required to prevent duplicating data if loadStock
+        	// is called multiple times
             productList.clear();
             File file = new File(filename);
             if (!file.exists()) return productList; 
@@ -161,6 +171,12 @@ public class Stock {
         return matches;
     }
 
+    
+    /**
+     * Searches accessory compatibility.
+     * Enforces an exact match for queries under 3 characters to prevent 
+     * false positive substring matches (e.g., searching "D" matching "D&D").
+     */
     public ArrayList<Product> searchByCompatibility(String compQuery) {
         ArrayList<Product> matches = new ArrayList<>();
         String searchLower = compQuery.toLowerCase();

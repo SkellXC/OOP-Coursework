@@ -1,9 +1,13 @@
 import java.util.Scanner;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Provides the interactive command-line interface for Admin users.
+ * Handles elevated inventory management tasks such as viewing wholesale costs, 
+ * adding new products, and updating existing stock levels.
+ */
 public class AdminCLI {
     public final static String NOT_IMPLEMENTED = "Not implemented";
     public final static String INVALID = "Invalid input";
@@ -41,6 +45,10 @@ public class AdminCLI {
         }
     }
     
+    /**
+     * Prompts the admin for stock adjustments and requires explicit confirmation 
+     * before delegating to the Stock class to overwrite the file.
+     */
     public static void updateStockAmount(Scanner scanner, Stock stock) {
         try {
             System.out.println("Enter the Product ID:");
@@ -83,6 +91,10 @@ public class AdminCLI {
         System.out.println("0) Log out");
     }
     
+    /**
+     * Gathers product attributes sequentially via CLI prompts, instantiates the 
+     * specific Product object, and passes it to Stock.addNewProduct().
+     */
     public static void takeProductDetails(Scanner scanner, Stock stock) {
         System.out.println("What type of product is this?");
         System.out.println("Enter '0' to cancel this operation");
@@ -112,46 +124,55 @@ public class AdminCLI {
         }
 
         ProductCategory selectedCat = categories[choice - 1];
-        String[] productDetails = new String[8];
-
         String categoryName = (selectedCat == ProductCategory.BOARDGAME) ? "board game" : "accessory";
-        String extraPrompt = (selectedCat == ProductCategory.BOARDGAME) ? "Enter max number of players:" : "Enter compatibility:";
-        String extraLabel = (selectedCat == ProductCategory.BOARDGAME) ? "Max Players" : "Compatibility";
 
-        productDetails[1] = categoryName; 
-
-        System.out.println("Enter the Product ID: ");
-        productDetails[0] = scanner.nextLine().trim();
+        System.out.println("Enter the Product ID (Whole Number): ");
+        int id = Integer.parseInt(getValidIntString(scanner));
         
         System.out.println("Enter type:");
-        productDetails[2] = scanner.nextLine().trim();
+        String type = scanner.nextLine().trim();
         
         System.out.println("Enter name:");
-        productDetails[3] = scanner.nextLine().trim();      
+        String name = scanner.nextLine().trim();      
         
         System.out.println("Enter selling price:");
-        productDetails[4] = scanner.nextLine().trim();
+        double price = Double.parseDouble(getValidDoubleString(scanner));
 
         System.out.println("Enter initial stock amount:");
-        productDetails[5] = scanner.nextLine().trim();
+        int stockAmount = Integer.parseInt(getValidIntString(scanner));
         
         System.out.println("Enter wholesale unit price:");
-        productDetails[6] = scanner.nextLine().trim();
+        double cost = Double.parseDouble(getValidDoubleString(scanner));
         
-        System.out.println(extraPrompt);
-        productDetails[7] = scanner.nextLine().trim();
+        Product newProduct = null;
+        String extraLabel = "";
+        String extraValue = "";
+
+        if (selectedCat == ProductCategory.BOARDGAME) {
+            System.out.println("Enter max number of players:");
+            int maxPlayers = Integer.parseInt(getValidIntString(scanner));
+            newProduct = new BoardGame(id, selectedCat, type, name, cost, stockAmount, price, maxPlayers);
+            extraLabel = "Max Players";
+            extraValue = String.valueOf(maxPlayers);
+        } else {
+            System.out.println("Enter compatibility:");
+            String compatibility = scanner.nextLine().trim();
+            newProduct = new Accessory(id, selectedCat, type, name, cost, stockAmount, price, compatibility);
+            extraLabel = "Compatibility";
+            extraValue = compatibility;
+        }
         
         System.out.println("\nThe product you are adding has the following details:");
-        System.out.printf("ID: %s\nCategory: %s\nType: %s\nName: %s\nPrice: £%s\nStock: %s\nWholesale Price: £%s\n%s: %s\n",
-            productDetails[0], productDetails[1], productDetails[2], productDetails[3], productDetails[4],
-            productDetails[5], productDetails[6], extraLabel, productDetails[7]);
+        System.out.printf("ID: %d\nCategory: %s\nType: %s\nName: %s\nPrice: £%.2f\nStock: %d\nWholesale Price: £%.2f\n%s: %s\n",
+            newProduct.getProductId(), categoryName, type, newProduct.getProductName(), newProduct.getPrice(),
+            newProduct.getQuantityInStock(), newProduct.getPurchaseCost(), extraLabel, extraValue);
         
         while (true) {
             System.out.println("Enter 1 to add product and 0 to cancel");
             try {
                 int accept = Integer.parseInt(scanner.nextLine().trim());
                 if (accept == 1) {
-                    boolean success = stock.addNewProduct(productDetails);
+                    boolean success = stock.addNewProduct(newProduct);
                     if (success) {
                         System.out.println("Item successfully added to stock.");
                     } else {
@@ -171,6 +192,10 @@ public class AdminCLI {
     }
     
     
+    /**
+     * Displays the inventory sorted by price descending.
+     * Unlike the customer view, this exposes the confidential purchase cost.
+     */
     public static void adminDisplayItems(List<Product> productList, Scanner scanner) {
         List<Product> sortedList = new ArrayList<>(productList);
         sortedList.sort(Comparator.comparingDouble(Product::getPrice).reversed());
@@ -192,5 +217,32 @@ public class AdminCLI {
         }
         System.out.println("\nPress Enter to return to the main menu...");
         scanner.nextLine();
+    }
+    
+    private static String getValidIntString(Scanner scanner) {
+        while (true) {
+            String input = scanner.nextLine().trim();
+            try {
+                Integer.parseInt(input);
+                return input; 
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a whole number:");
+            }
+        }
+    }
+
+    /**
+     * Forces the user to input a valid decimal number before continuing.
+     */
+    private static String getValidDoubleString(Scanner scanner) {
+        while (true) {
+            String input = scanner.nextLine().trim();
+            try {
+                Double.parseDouble(input);
+                return input; 
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid decimal number:");
+            }
+        }
     }
 }

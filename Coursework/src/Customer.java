@@ -1,7 +1,16 @@
-
+/**
+ * Represents a customer
+ * Extends the User class by adding a shopping cart
+ * to manage purchases during individual sessions
+ */
 public class Customer extends User{
 	private ShoppingCart basket;
-	
+	/**
+     * Constructs a new Customer and initializes an empty shopping basket.
+     * @param userID  The unique identifier for the customer.
+     * @param name    The customer's display name.
+     * @param address The customer's billing/shipping address.
+     */
 	public Customer(int userID, String name, Address address){
 		super(userID, name, address);
 		
@@ -20,5 +29,15 @@ public class Customer extends User{
 		return this.basket.removeItemFromCart(product, quantity);
 	}
 	
+	public boolean isBasketEmpty() {
+		return this.basket.getItems().isEmpty();
+	}
 	
+	public Receipt checkout(PaymentMethod paymentMethod, Stock stock) {
+		return this.basket.pay(paymentMethod, stock, this.getAddress());
+	}
+	
+	public void emptyBasket() {
+		this.basket.clearCart();
+	}
 }

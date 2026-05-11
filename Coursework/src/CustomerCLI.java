@@ -1,9 +1,12 @@
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.ArrayList;
 
+/**
+ * Provides the interactive command-line interface for Customer users.
+ * Routes user input to the appropriate ShoppingCart and Stock operations.
+ */
 public class CustomerCLI {
     public final static String NOT_IMPLEMENTED = "Not implemented";
     public final static String INVALID = "Invalid input";
@@ -11,6 +14,10 @@ public class CustomerCLI {
     public static void run(Scanner consoleInput, Stock stock, Customer currentCustomer) {
         System.out.println("USER VIEW");
 
+        
+        /**
+         * The primary execution loop for the customer session.
+         */
         while (true) {
             printCustomerMenu();
             
@@ -80,6 +87,9 @@ public class CustomerCLI {
         System.out.println("0) Log out");
     }
 
+    /**
+     * Displays all available products.
+     */
     public static void userDisplayItems(Scanner scanner, List<Product> productList) {
         List<Product> sortedList = new ArrayList<>(productList);
         
@@ -94,6 +104,10 @@ public class CustomerCLI {
         }
     }
     
+    /**
+     * Handles the removal of items from the customer's personal basket.
+     * Includes a confirmation check if the user attempts to remove all instances of an item.
+     */
     public static void handleRemove(Scanner scanner, Customer customer) {
         System.out.println("Enter the ID of the product you want to remove:");
         int productID;
@@ -125,7 +139,10 @@ public class CustomerCLI {
             System.out.println("Invalid input. Please enter a valid number.");
             return;
         }
-
+        if(quantity < 0) {
+        	System.out.println("Please enter a positive number");
+        	return;
+        }
         int currentCount = customer.getBasket().getProductCount(productToRemove.getProductId());
         
         if (quantity == currentCount && currentCount > 0) {
@@ -154,6 +171,10 @@ public class CustomerCLI {
         }
     }
     
+    /**
+     * Handles adding items to the basket by retrieving the product from the main stock
+     * and passing it to the customer's cart logic.
+     */
     public static void handleAdd(Scanner scanner, Customer customer, Stock stock) {
         System.out.println("Enter the ID of the product you want to add:");
         int productID;
@@ -198,6 +219,11 @@ public class CustomerCLI {
         }
     }
 
+    
+    /**
+     * Aggregates and displays the current contents of the basket, calculating subtotals 
+     * for distinct items and the final basket total.
+     */
     public static void handleViewBasket(Customer customer) {
         ShoppingCart basket = customer.getBasket();
         List<Product> items = basket.getItems();
@@ -212,14 +238,18 @@ public class CustomerCLI {
                 "ID", "Name", "Price", "Quantity", "Subtotal"));
         System.out.println("-------------------------------------------------------------------");
 
-        List<Product> distinctItems = items.stream().distinct().collect(Collectors.toList());
+        java.util.ArrayList<Integer> processedIDs = new java.util.ArrayList<>();
 
-        for (Product p : distinctItems) {
-            int quantity = basket.getProductCount(p.getProductId());
-            double subtotal = p.getPrice() * quantity;
-            
-            System.out.println(String.format("%-5d | %-20s | £%-9.2f | %-8d | £%-9.2f",
-                    p.getProductId(), p.getProductName(), p.getPrice(), quantity, subtotal));
+        for (Product p : items) {
+            if (!processedIDs.contains(p.getProductId())) {
+                int quantity = basket.getProductCount(p.getProductId());
+                double subtotal = p.getPrice() * quantity;
+                
+                System.out.println(String.format("%-5d | %-20s | £%-9.2f | %-8d | £%-9.2f",
+                        p.getProductId(), p.getProductName(), p.getPrice(), quantity, subtotal));
+                        
+                processedIDs.add(p.getProductId());
+            }
         }
 
         System.out.println("-------------------------------------------------------------------");
@@ -234,13 +264,16 @@ public class CustomerCLI {
         String input = scanner.nextLine().trim();
         
         if (input.equals("1")) {
-            customer.getBasket().clearCart();
+            customer.emptyBasket();
             System.out.println("Basket successfully cleared.");
         } else {
             System.out.println("Operation cancelled. Your basket is unchanged.");
         }
     }
     
+    /**
+     * Prompts the user for search parameters and routes to the appropriate Stock query method.
+     */
     public static void handleSearch(Scanner scanner, Stock stock) {
         System.out.println("What would you like to search by?");
         System.out.println("1) Product ID");
@@ -277,8 +310,13 @@ public class CustomerCLI {
         }
     }
     
+    
+    /**
+     * Guides the user through the checkout process, enforcing input validation 
+     * for payment details 
+     */
     public static void handlePayment(Scanner scanner, Customer customer, Stock stock) {
-        if (customer.getBasket().getItems().isEmpty()) { 
+    	if (customer.isBasketEmpty()) { 
             System.out.println("Your basket is empty. Nothing to checkout.");
             return; 
         }
@@ -359,7 +397,7 @@ public class CustomerCLI {
             return; 
         }
 
-        Receipt finalReceipt = customer.getBasket().pay(method, stock, customer.getAddress());
+        Receipt finalReceipt = customer.checkout(method, stock);
         if (finalReceipt != null) {
             System.out.println("\n--- RECEIPT ---");
             System.out.println(finalReceipt); 

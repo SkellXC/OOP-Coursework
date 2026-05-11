@@ -4,13 +4,18 @@ import java.io.FileNotFoundException;
 import java.io.File;
 import java.util.ArrayList;
 
+
+/**
+ * The entry point for the application.
+ * Loads the users and then routes them
+ * to their designated CLI (based on roles).
+ */
 public class Main {
 
     public static void main(String[] args) {
         
         Stock stock = new Stock();
         
-        // Load users from file
         List<User> users = loadUsersFromFile("UserAccounts.txt");
         Scanner consoleInput = new Scanner(System.in);
         System.out.println("WELCOME");
@@ -26,17 +31,16 @@ public class Main {
                     System.out.println("Goodbye");
                     System.out.println("Closing program...");
                     System.out.println();
-                    consoleInput.close(); // Close the scanner before exiting
+                    consoleInput.close(); 
                     return;
                 }
 
-                // Validate the input is within the bounds of the list
+                // Converts the 1-based menu selection to a 0-based array index
                 if (selection < 1 || selection > users.size()) {
                     System.out.println("Invalid user selection. Try again.");
                     continue; 
                 }
 
-                // Get the chosen user (subtract 1 because list index starts at 0)
                 User selectedUser = users.get(selection - 1);
 
                 // Route to the correct CLI based on the object type
@@ -64,6 +68,11 @@ public class Main {
         System.out.println("0) Exit");
     }
     
+    /**
+     * Parses the flat text file to populate the system's user registry.
+     * Expects a specific 6-part format delimited by semicolons:
+     * [ID; Name; HouseNumber; Postcode; City; Role]
+     */
     private static List<User> loadUsersFromFile(String filename) {
         List<User> users = new ArrayList<>();
         File file = new File(filename);

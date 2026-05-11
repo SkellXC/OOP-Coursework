@@ -1,4 +1,7 @@
-
+/**
+ * Represents a physical address associated with a Customer.
+ * Used primarily to format the billing address for checkout receipts.
+ */
 public class Address {
 	private String postcode;
 	private String city;

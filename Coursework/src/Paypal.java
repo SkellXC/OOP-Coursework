@@ -1,7 +1,15 @@
-
+/**
+ * Represents the payment method paypal.
+ * Generates a formatted receipt at the end
+ * unique to Paypal transactions.
+ */
 public class Paypal implements PaymentMethod {
 	private String email;
 	
+	/**
+	 * Initializes a new PayPal payment.
+	 * @param email The customer's PayPal email address used for the transaction.
+	 */
 	public Paypal(String email) {
 		this.email = email;
 	}
